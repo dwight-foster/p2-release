@@ -7,5 +7,5 @@
 from pathlib import Path
 
 if __name__ == "__main__":
-    INPUT_DIR = Path('./data').resolve()
-    OUTPUT_DIR = Path('./').resolve()
+    INPUT_DIR = Path('data').resolve()
+    OUTPUT_DIR = Path('/').resolve()
