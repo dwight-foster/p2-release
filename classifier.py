@@ -8,8 +8,11 @@ from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 import sys
 
+INPUT_DIR = Path('./data').resolve()
+OUTPUT_DIR = Path('./').resolve()
+
+
 def read_data(filename):
-    INPUT_DIR = Path('data').resolve()
     data = pd.read_csv(INPUT_DIR / filename)
     category = data['Category']
     message = data['Message']
@@ -20,10 +23,12 @@ def get_fit_vectorizer(message):
     vectorizer.fit(message)
     return vectorizer
 
+
 def get_fit_scaler(X):
     scaler = StandardScaler(with_mean=False)
     scaler.fit(X)
     return scaler
+
 
 def preprocess_data(message, category, vectorizer=None, scaler=None):
     if vectorizer is None:
@@ -50,7 +55,6 @@ def evaluate_model(model, X_test, y_test):
     return model.score(X_test, y_test)
 
 def write_output(model, X_test, output_filename, input_filename):
-    INPUT_DIR = Path('data').resolve()
     y_pred = model.predict(X_test)
     og_data = pd.read_csv(INPUT_DIR / input_filename)
     og_data['Predicted'] = y_pred
