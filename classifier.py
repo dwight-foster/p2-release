@@ -19,10 +19,14 @@ def read_data(filename):
     return message, category
 
 def get_fit_vectorizer(message):
-    vectorizer = CountVectorizer()
+    # Feature engineering
+    vectorizer = CountVectorizer(
+        ngram_range=(1, 2),  # adds unigrams and bigrams (e.g., "free" and "free money")
+        min_df=2,            # ignore terms that appear in less than 2 documents
+        max_df=0.95,         # ignore terms that appear in more than 95% of documents
+    )
     vectorizer.fit(message)
     return vectorizer
-
 
 def get_fit_scaler(X):
     scaler = StandardScaler(with_mean=False)
@@ -42,7 +46,13 @@ def preprocess_data(message, category, vectorizer=None, scaler=None):
 
 
 def train_svm(X, y):
-    model = SVC(kernel='linear')
+    model = SVC( # Switch to sigmoid, more defined hyperparametsrs
+        kernel='sigmoid',
+        C=0.8,
+        gamma=0.0004,
+        coef0=0,
+        tol=0.001
+    )
     model.fit(X, y)
     return model
 

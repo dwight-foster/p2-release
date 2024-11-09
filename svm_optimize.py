@@ -36,7 +36,24 @@ def train_svm(X, y):
 
 def train_svm_optimized(X, y):
     model = SVC(kernel='linear')
-    param_grid = {'kernel' : ['linear', 'poly', 'rbf', 'sigmoid'], 'C': [0.1, 1, 10, 100, 1000], 'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
+    # Initial
+    # param_grid = {'kernel' : ['linear', 'poly', 'rbf', 'sigmoid'], 'C': [0.1, 1, 10, 100, 1000], 'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
+
+    # Took the best from initial
+    # param_grid = {
+    #     'kernel': ['sigmoid', 'rbf'],  # both showed good performance
+    #     'C': [0.8, 1, 1.2],
+    #     'gamma': [0.0005, 0.001, 0.002]
+    # }
+
+    # Sigmoid was the best, added more tuned options
+    param_grid = {
+        'kernel': ['sigmoid'],
+        'C': [0.8, 1, 1.2],
+        'gamma': [0.0003, 0.0004, 0.0005, 0.0006],
+        'coef0': [-0.5, 0, 0.5],
+        'tol': [1e-4, 1e-3]
+    }
     grid = GridSearchCV(model, param_grid, refit = True, verbose = 3)
     grid.fit(X, y)
     chosen = grid.best_estimator_
