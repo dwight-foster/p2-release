@@ -58,7 +58,7 @@ def write_output(model, X_test, output_filename, input_filename):
     y_pred = model.predict(X_test)
     og_data = pd.read_csv(INPUT_DIR / input_filename)
     og_data['Predicted'] = y_pred
-    og_data.to_csv(output_filename)
+    og_data.to_csv(OUTPUT_DIR / output_filename)
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
