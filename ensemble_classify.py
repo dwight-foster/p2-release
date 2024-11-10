@@ -10,7 +10,7 @@ import sys
 INPUT_DIR = Path('./data').resolve()
 OUTPUT_DIR = Path('./').resolve()
 
-#this is pretty much the same as part 1, the only difference is 
+#this is pretty much the same as part 1, the main difference is the random forest
 
 def read_data(filename):
     data = pd.read_csv(INPUT_DIR / filename)
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     print(f"Train score: {train_score}")
     print(f"Test score: {test_score}")
 
-    write_output(forest, test_X, test_output_filename, test_filename)
-    write_output(forest, train_X, train_output_filename, train_filename)
+    write_output(forest, test_X, test_filename, test_output_filename)
+    write_output(forest, train_X, train_filename, train_output_filename)
 
     print(f"Output written to {train_output_filename} and {test_output_filename}")
 
