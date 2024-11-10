@@ -18,13 +18,16 @@ def read_data(filename):
     message = data['Message']
     return message, category
 
-def get_fit_vectorizer(message):
-    # Feature engineering
-    vectorizer = CountVectorizer(
-        ngram_range=(1, 2),  # adds unigrams and bigrams (e.g., "free" and "free money")
-        min_df=2,            # ignore terms that appear in less than 2 documents
-        max_df=0.95,         # ignore terms that appear in more than 95% of documents
-    )
+def get_fit_vectorizer(message, use_engineering=False):
+    if use_engineering:  # Feature engineering for SVM
+        vectorizer = CountVectorizer(
+            ngram_range=(1, 2),  # adds unigrams and bigrams (e.g., "free" and "free money")
+            min_df=2,  # ignore terms that appear in less than 2 documents
+            max_df=0.95,  # ignore terms that appear in more than 95% of documents
+        )
+    else:  # Basic settings for DT (works better)
+        vectorizer = CountVectorizer()
+
     vectorizer.fit(message)
     return vectorizer
 
@@ -46,7 +49,7 @@ def preprocess_data(message, category, vectorizer=None, scaler=None):
 
 
 def train_svm(X, y):
-    model = SVC( # Switch to sigmoid, more defined hyperparametsrs
+    model = SVC(  # Switch to sigmoid, more defined hyperparametsrs
         kernel='sigmoid',
         C=0.8,
         gamma=0.0004,
@@ -84,7 +87,7 @@ if __name__ == "__main__":
     train_message, train_category = read_data(train_filename)
     test_message, test_category = read_data(test_filename)
     full_message = pd.concat([train_message, test_message])
-    vectorizer = get_fit_vectorizer(full_message)
+    vectorizer = get_fit_vectorizer(full_message, use_engineering=(model_type == 'svm'))
     scaler = get_fit_scaler(vectorizer.transform(full_message))
     train_X, train_y = preprocess_data(train_message, train_category, vectorizer, scaler)
     test_X, test_y = preprocess_data(test_message, test_category, vectorizer, scaler)
