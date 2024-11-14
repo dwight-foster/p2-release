@@ -89,7 +89,7 @@ if __name__ == "__main__":
     train_message, train_category = read_data(train_filename)
     test_message, test_category = read_data(test_filename)
     full_message = pd.concat([train_message, test_message])
-    vectorizer = get_fit_vectorizer(full_message, use_engineering=False)
+    vectorizer = get_fit_vectorizer(full_message, use_engineering=(model_type == 'svm'))
     scaler = get_fit_scaler(vectorizer.transform(full_message))
     train_X, train_y = preprocess_data(train_message, train_category, vectorizer, scaler)
     test_X, test_y = preprocess_data(test_message, test_category, vectorizer, scaler)
