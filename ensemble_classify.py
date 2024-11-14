@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import StackingClassifier
+from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import sys
 
@@ -48,23 +50,24 @@ def preprocess_data(message, category, vectorizer=None, scaler=None):
     return X, y
 
 
-def train_svm(X, y):
-    model = SVC(  # Switch to sigmoid, more defined hyperparametsrs
+def stacking_model(X, y):
+    svm_sigmoid = SVC(  # grid search better params for sigmoid
         kernel='sigmoid',
         C=0.8,
-        gamma=0.0004,
-    )
-    model.fit(X, y)
-    return model
+        gamma=0.0003,
+        coef0=0.1)
 
-def train_decision_tree(X, y):
-    model = DecisionTreeClassifier(
-        max_depth=70,
-        max_leaf_nodes=50,
-        splitter='random',
+    svm_linear = SVC(  # grid search better params for linear
+        kernel='linear',
+        C=1.1)
+
+    stacking = StackingClassifier(
+        estimators=[('svm_sigmoid', svm_sigmoid),  ('svm_linear', svm_linear)],
+        final_estimator=LogisticRegression(C=10.0)
     )
-    model.fit(X, y)
-    return model
+    stacking.fit(X, y)
+
+    return stacking
 
 def evaluate_model(model, X_test, y_test):
     return model.score(X_test, y_test)
@@ -76,31 +79,28 @@ def write_output(model, X_test, output_filename, input_filename):
     og_data.to_csv(OUTPUT_DIR / output_filename)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print("Usage: python3 classifier.py svm_or_dt train_filename test_filename train_output_filename test_output_filename")
+    if len(sys.argv) != 5:
+        print("Usage: python3 ensemble_classifier.py train_filename test_filename train_output_filename test_output_filename")
         sys.exit(1)
 
-    model_type = sys.argv[1]
-    train_filename = sys.argv[2]
-    test_filename = sys.argv[3]
-    train_output_filename = sys.argv[4]
-    test_output_filename = sys.argv[5]
+    # model_type = sys.argv[1]
+    train_filename = sys.argv[1]
+    test_filename = sys.argv[2]
+    train_output_filename = sys.argv[3]
+    test_output_filename = sys.argv[4]
 
     train_message, train_category = read_data(train_filename)
     test_message, test_category = read_data(test_filename)
     full_message = pd.concat([train_message, test_message])
+
     vectorizer = get_fit_vectorizer(full_message, use_engineering=False)
+
+
     scaler = get_fit_scaler(vectorizer.transform(full_message))
     train_X, train_y = preprocess_data(train_message, train_category, vectorizer, scaler)
     test_X, test_y = preprocess_data(test_message, test_category, vectorizer, scaler)
 
-    if model_type == 'svm':
-        model = train_svm(train_X, train_y)
-    elif model_type == 'dt':
-        model = train_decision_tree(train_X, train_y)
-    else:
-        print("Invalid model type")
-        sys.exit(1)
+    model = stacking_model(train_X, train_y)
 
     train_score = evaluate_model(model, train_X, train_y)
     test_score = evaluate_model(model, test_X, test_y)
